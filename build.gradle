@@ -49,7 +49,8 @@ subprojects {
                 }
             }
         }
-        if(project.isLibrary && rootProject.hasProperty('sonatypeUsername') && rootProject.hasProperty('sonatypePassword')) {
+        def DISABLE_SONA_TYPE_CONFIG = true
+        if (!DISABLE_SONA_TYPE_CONFIG && project.isLibrary && rootProject.hasProperty('sonatypeUsername') && rootProject.hasProperty('sonatypePassword')) {
             configure(project) {
                 apply plugin: 'maven'
                 apply plugin: 'signing'
