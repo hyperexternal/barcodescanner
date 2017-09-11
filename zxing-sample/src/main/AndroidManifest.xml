@@ -47,7 +47,7 @@
       </activity>
 
       <activity android:name=".CustomViewFinderScannerActivity"
-                android:theme="@style/AppTheme"
+                android:theme="@style/AppOverlayTheme"
                 android:label="@string/custom_view_finder_scanner_activity">
       </activity>
 

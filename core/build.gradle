@@ -1,4 +1,15 @@
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'com.jakewharton.hugo:hugo-plugin:1.2.1'
+    }
+}
 apply plugin: 'com.android.library'
+apply plugin: 'com.jakewharton.hugo'
 
 ext {
     isLibrary = true
@@ -6,6 +17,15 @@ ext {
     pomArtifactId = "core"
     pomName = "Barcode Scanner View"
     pomDescription = 'An android library project which contains the core barcode scanner view'
+}
+
+android {
+
+    buildTypes {
+        debug {
+            defaultPublishConfig "debug"
+        }
+    }
 }
 
 dependencies {

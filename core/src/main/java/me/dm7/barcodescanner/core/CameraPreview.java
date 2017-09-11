@@ -17,6 +17,7 @@ import android.view.WindowManager;
 
 import java.util.List;
 
+import hugo.weaving.DebugLog;
 public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
     private static final String TAG = "CameraPreview";
 
@@ -241,7 +242,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             w = portraitWidth;
         }
 
-        double targetRatio = (double) w / h;
+        double targetRatio = getTargetRatio(w, h);
         if (sizes == null) return null;
 
         Camera.Size optimalSize = null;
@@ -251,8 +252,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
         // Try to find an size match aspect ratio and size
         for (Camera.Size size : sizes) {
-            double ratio = (double) size.width / size.height;
-            if (Math.abs(ratio - targetRatio) > mAspectTolerance) continue;
+            double ratio = getQrCodeRatio(size.width, size.height);
+            if (invalidRatio(targetRatio, ratio, mAspectTolerance)) continue;
             /*ADD another minimum height check condition
             https://github.com/dm77/barcodescanner/issues/287
             */
@@ -273,6 +274,21 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             }
         }
         return optimalSize;
+    }
+
+    @DebugLog
+    private double getQrCodeRatio(int width, int height) {
+        return (double) width / height;
+    }
+
+    @DebugLog
+    private double getTargetRatio(double witdh, int height) {
+        return witdh / height;
+    }
+
+    @DebugLog
+    private boolean invalidRatio(double targetRatio, double ratio, float aspectTolerance) {
+        return Math.abs(ratio - targetRatio) > aspectTolerance;
     }
 
     public void setAutoFocus(boolean state) {
