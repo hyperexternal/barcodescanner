@@ -1,10 +1,10 @@
 ext.versions = [
         compile_sdk   : 26,
-        min_sdk       : 14,//Google Play Services Require Mini Api 14
+        min_sdk       : 19,//Google Play Services Require Mini Api 14
         target_sdk    : 26,
         build_tools   : "26.0.1",
         support_lib   : "26.0.2",
-        play_services : "11.2.2",
+        play_services : "11.4.2",
         zxing         : "3.3.0",
         barcodescanner: "1.9.8"
 ]
