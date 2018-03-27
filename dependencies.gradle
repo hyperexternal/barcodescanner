@@ -11,6 +11,7 @@ ext.versions = [
 
 ext.libraries = [
         support_v4          : "com.android.support:support-v4:$versions.support_lib",
+        support_annotations : "com.android.support:support-annotations:$versions.support_lib",
         appcompat_v7        : "com.android.support:appcompat-v7:$versions.support_lib",
         design_support      : "com.android.support:design:$versions.support_lib",
         zxing_core          : "com.google.zxing:core:$versions.zxing",
