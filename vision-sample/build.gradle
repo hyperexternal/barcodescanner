@@ -2,9 +2,9 @@ apply plugin: 'com.android.application'
 
 dependencies {
     api project(":vision")
-    implementation libraries.support_v4
-    implementation libraries.appcompat_v7
-    implementation libraries.design_support
+    api  libraries.support_v4
+    api  libraries.appcompat_v7
+    api  libraries.design_support
 }
 
 android {
