@@ -9,6 +9,6 @@ ext {
 }
 
 dependencies {
-    implementation project(":core")
-    implementation libraries.vision_core
+    api project(":core")
+    api libraries.vision_core
 }

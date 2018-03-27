@@ -9,5 +9,5 @@ ext {
 }
 
 dependencies {
-    implementation libraries.support_annotations
+    api libraries.support_v4
 }

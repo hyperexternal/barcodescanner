@@ -1,3 +1,5 @@
+include ":core"
 include ':vision'
-include "vision-sample"
-include "core", "zxing", "zxing-sample", "zbar", "zbar-sample"
+include ":vision-sample"
+include ":zxing"
+include ":zxing-sample"
