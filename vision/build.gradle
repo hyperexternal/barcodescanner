@@ -9,6 +9,6 @@ ext {
 }
 
 dependencies {
-    api project(":core")
-    api libraries.vision_core
+    compile libraries.barcodescanner_core
+    compile libraries.vision_core
 }
