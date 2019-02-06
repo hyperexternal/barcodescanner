@@ -2,14 +2,12 @@ apply from: 'dependencies.gradle'
 
 buildscript {
     repositories {
-        mavenCentral()
-        jcenter()
         google()
+        jcenter()
     }
 
     dependencies {
-        //noinspection GradleDependency
-        classpath 'com.android.tools.build:gradle:3.0.1'
+        classpath 'com.android.tools.build:gradle:3.3.1'
     }
 }
 
@@ -113,8 +111,4 @@ subprojects {
             }
         }
     }
-}
-
-task wrapper(type: Wrapper) {
-    gradleVersion = '4.4'
 }
