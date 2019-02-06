@@ -11,5 +11,5 @@ ext {
 dependencies {
     //compile project(":core")
     api libraries.barcodescanner_core
-    api libraries.zxing_android_core
+    api libraries.zxing_core
 }
