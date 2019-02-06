@@ -16,8 +16,8 @@ allprojects {
     version = '1.9.8'
 
     repositories {
-        mavenCentral()
         google()
+        jcenter()
         maven {
             url 'https://oss.sonatype.org/content/groups/public'
         }
