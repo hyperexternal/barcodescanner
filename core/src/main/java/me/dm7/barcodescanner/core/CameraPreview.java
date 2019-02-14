@@ -28,6 +28,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     private boolean mShouldScaleToFill = true;
     private Camera.PreviewCallback mPreviewCallback;
     private float mAspectTolerance = 0.1f;
+    private static final int MINIMUM_SIZE_HEIGHT = 480;
 
     public CameraPreview(Context context, CameraWrapper cameraWrapper, Camera.PreviewCallback previewCallback) {
         super(context);
@@ -252,7 +253,10 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         for (Camera.Size size : sizes) {
             double ratio = (double) size.width / size.height;
             if (Math.abs(ratio - targetRatio) > mAspectTolerance) continue;
-            if (Math.abs(size.height - targetHeight) < minDiff) {
+            /*ADD another minimum height check condition
+            https://github.com/dm77/barcodescanner/issues/287
+            */
+            if (Math.abs(size.height - targetHeight) < minDiff && size.height >= MINIMUM_SIZE_HEIGHT) {
                 optimalSize = size;
                 minDiff = Math.abs(size.height - targetHeight);
             }
@@ -262,7 +266,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         if (optimalSize == null) {
             minDiff = Double.MAX_VALUE;
             for (Camera.Size size : sizes) {
-                if (Math.abs(size.height - targetHeight) < minDiff) {
+                if (Math.abs(size.height - targetHeight) < minDiff && size.height >= MINIMUM_SIZE_HEIGHT) {//ADD another minimum height check condition
                     optimalSize = size;
                     minDiff = Math.abs(size.height - targetHeight);
                 }
