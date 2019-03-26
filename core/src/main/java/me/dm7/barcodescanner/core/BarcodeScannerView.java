@@ -1,20 +1,21 @@
 package me.dm7.barcodescanner.core;
 
 import android.content.Context;
-import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.hardware.Camera;
+import android.os.Build;
 import android.support.annotation.ColorInt;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 
 public abstract class BarcodeScannerView extends FrameLayout implements Camera.PreviewCallback  {
+
+    private static final float ASPECT_TOLERANCE_HUAWEI = 0.5f;
 
     private CameraWrapper mCameraWrapper;
     private CameraPreview mPreview;
@@ -80,7 +81,7 @@ public abstract class BarcodeScannerView extends FrameLayout implements Camera.P
         removeAllViews();
 
         mPreview = new CameraPreview(getContext(), cameraWrapper, this);
-        mPreview.setAspectTolerance(mAspectTolerance);
+        setAspectTolerance(mPreview);
         mPreview.setShouldScaleToFill(mShouldScaleToFill);
         if (!mShouldScaleToFill) {
             RelativeLayout relativeLayout = new RelativeLayout(getContext());
@@ -98,6 +99,19 @@ public abstract class BarcodeScannerView extends FrameLayout implements Camera.P
             throw new IllegalArgumentException("IViewFinder object returned by " +
                     "'createViewFinderView()' should be instance of android.view.View");
         }
+    }
+
+    private void setAspectTolerance(CameraPreview mPreview) {
+        if (isHuaweiLenovoPhones()) { //hard coded huawei and lenovo phones https://github.com/dm77/barcodescanner
+            mPreview.setAspectTolerance(ASPECT_TOLERANCE_HUAWEI);
+        } else {
+            mPreview.setAspectTolerance(mAspectTolerance);
+        }
+    }
+
+    private boolean isHuaweiLenovoPhones() {
+        String manufacturer = Build.MANUFACTURER;
+        return "HUAWEI".equalsIgnoreCase(manufacturer) || "Lenovo".equalsIgnoreCase(manufacturer);
     }
 
     /**
