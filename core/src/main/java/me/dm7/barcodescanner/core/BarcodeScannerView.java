@@ -5,7 +5,6 @@ import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.hardware.Camera;
-import android.os.Build;
 import android.support.annotation.ColorInt;
 import android.util.AttributeSet;
 import android.view.Gravity;
@@ -15,7 +14,9 @@ import android.widget.RelativeLayout;
 
 public abstract class BarcodeScannerView extends FrameLayout implements Camera.PreviewCallback  {
 
-    private static final float ASPECT_TOLERANCE_HUAWEI = 0.5f;
+    private static final float NORMAL_ASPECT_TOLERANCE = 0.1f;
+    private static final float TABLET_ASPECT_TOLERANCE = 0.3f;
+    private static final float HUAWEI_ASPECT_TOLERANCE = 0.5f;
 
     private CameraWrapper mCameraWrapper;
     private CameraPreview mPreview;
@@ -38,6 +39,7 @@ public abstract class BarcodeScannerView extends FrameLayout implements Camera.P
     private float mBorderAlpha = 1.0f;
     private int mViewFinderOffset = 0;
     private float mAspectTolerance = 0.1f;
+    private boolean isTablet = false;
 
     public BarcodeScannerView(Context context) {
         super(context);
@@ -81,7 +83,7 @@ public abstract class BarcodeScannerView extends FrameLayout implements Camera.P
         removeAllViews();
 
         mPreview = new CameraPreview(getContext(), cameraWrapper, this);
-        setAspectTolerance(mPreview);
+        setupAspectTolerance(mPreview);
         mPreview.setShouldScaleToFill(mShouldScaleToFill);
         if (!mShouldScaleToFill) {
             RelativeLayout relativeLayout = new RelativeLayout(getContext());
@@ -101,17 +103,19 @@ public abstract class BarcodeScannerView extends FrameLayout implements Camera.P
         }
     }
 
-    private void setAspectTolerance(CameraPreview mPreview) {
-        if (isHuaweiLenovoPhones()) { //hard coded huawei and lenovo phones https://github.com/dm77/barcodescanner
-            mPreview.setAspectTolerance(ASPECT_TOLERANCE_HUAWEI);
+    private void setupAspectTolerance(CameraPreview mPreview) {
+        if (isTablet) {
+            setAspectTolerance(TABLET_ASPECT_TOLERANCE);
+        } else if (PhoneAspectToleranceDecider.isHuaweiOrLenovo()) { //hard coded huawei and lenovo phones https://github.com/dm77/barcodescanner
+            setAspectTolerance(HUAWEI_ASPECT_TOLERANCE);
         } else {
-            mPreview.setAspectTolerance(mAspectTolerance);
+            setAspectTolerance(NORMAL_ASPECT_TOLERANCE);
         }
+        mPreview.setAspectTolerance(mAspectTolerance);
     }
 
-    private boolean isHuaweiLenovoPhones() {
-        String manufacturer = Build.MANUFACTURER;
-        return "HUAWEI".equalsIgnoreCase(manufacturer) || "Lenovo".equalsIgnoreCase(manufacturer);
+    public void setTablet(boolean tablet) {
+        isTablet = tablet;
     }
 
     /**
