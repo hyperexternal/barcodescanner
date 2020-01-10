@@ -114,10 +114,6 @@ public abstract class BarcodeScannerView extends FrameLayout implements Camera.P
         mPreview.setAspectTolerance(mAspectTolerance);
     }
 
-    public void setTablet(boolean tablet) {
-        isTablet = tablet;
-    }
-
     /**
      * <p>Method that creates view that represents visual appearance of a barcode scanner</p>
      * <p>Override it to provide your own view for visual appearance of a barcode scanner</p>
@@ -139,6 +135,12 @@ public abstract class BarcodeScannerView extends FrameLayout implements Camera.P
         viewFinderView.setSquareViewFinder(mSquaredFinder);
         viewFinderView.setViewFinderOffset(mViewFinderOffset);
         return viewFinderView;
+    }
+
+    public void setTablet(boolean tablet) {
+        isTablet = tablet;
+        mViewFinderView.setTablet(isTablet);
+        mViewFinderView.setupViewFinder();
     }
 
     public void setLaserColor(int laserColor) {

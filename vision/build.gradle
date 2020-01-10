@@ -1,4 +1,32 @@
 apply plugin: 'com.android.library'
+apply plugin: 'digital.wup.android-maven-publish'
+apply plugin: 'maven-publish'
+
+android {
+
+    task sourceJar(type: Jar) {
+        from android.sourceSets.main.java.srcDirs
+        classifier "sources"
+    }
+
+    publishing {
+        publications {
+            mavenAar(MavenPublication) {
+                from components.android
+                groupId 'com.microstrategy.m2020'
+                artifactId 'vision'
+                artifact(sourceJar)
+                version '1.0.0'
+            }
+        }
+
+        repositories {
+            maven {
+                url "$buildDir/releases"
+            }
+        }
+    }
+}
 
 ext {
     isLibrary = true
