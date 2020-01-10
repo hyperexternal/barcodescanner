@@ -4,6 +4,8 @@ import android.graphics.Rect;
 
 public interface IViewFinder {
 
+    void setTablet(boolean isTablet);
+
     void setLaserColor(int laserColor);
     void setMaskColor(int maskColor);
     void setBorderColor(int borderColor);

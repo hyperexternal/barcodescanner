@@ -3,11 +3,15 @@ package me.dm7.barcodescanner.core;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.CornerPathEffect;
+import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.graphics.Shader;
+import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.View;
 
@@ -16,19 +20,21 @@ public class ViewFinderView extends View implements IViewFinder {
 
     private Rect mFramingRect;
 
-    private static final float PORTRAIT_WIDTH_RATIO = 6f/8;
-    private static final float PORTRAIT_WIDTH_HEIGHT_RATIO = 0.75f;
+    private static final float PHONE_PORTRAIT_WIDTH_RATIO = 0.7f;
+    private static final float PHONE_PORTRAIT_HEIGHT_RATIO = 0.4f;
 
-    private static final float LANDSCAPE_HEIGHT_RATIO = 5f/8;
-    private static final float LANDSCAPE_WIDTH_HEIGHT_RATIO = 1.4f;
+    private static final float TABLET_PORTRAIT_WIDTH_RATIO = 0.52f;
+    private static final float TABLET_PORTRAIT_HEIGHT_RATIO = 0.35f;
+
+    // Landscape orientation is restricted to tablets
+    private static final float LANDSCAPE_WIDTH_RATIO = 0.35f;
+    private static final float LANDSCAPE_HEIGHT_RATIO = 0.52f;
+
     private static final int MIN_DIMENSION_DIFF = 50;
 
     private static final float DEFAULT_SQUARE_DIMENSION_RATIO = 5f / 8;
 
-    private static final int[] SCANNER_ALPHA = {0, 64, 128, 192, 255, 192, 128, 64};
-    private int scannerAlpha;
-    private static final int POINT_SIZE = 10;
-    private static final long ANIMATION_DELAY = 80l;
+    private int scannerAlpha = 255;
 
     private final int mDefaultLaserColor = getResources().getColor(R.color.viewfinder_laser);
     private final int mDefaultMaskColor = getResources().getColor(R.color.viewfinder_mask);
@@ -44,6 +50,14 @@ public class ViewFinderView extends View implements IViewFinder {
     private boolean mIsLaserEnabled;
     private float mBordersAlpha;
     private int mViewFinderOffset = 0;
+    private boolean isTablet = false;
+
+    private Handler handler;
+    private Runnable refreshRunnable;
+
+    private int yPosition = 0;
+    private int yDelta = 7;
+    private int gradientHeight = 60;
 
     public ViewFinderView(Context context) {
         super(context);
@@ -56,6 +70,14 @@ public class ViewFinderView extends View implements IViewFinder {
     }
 
     private void init() {
+        handler = new Handler();
+        refreshRunnable = new Runnable() {
+            @Override
+            public void run() {
+                refreshView();
+            }
+        };
+        
         //set up laser paint
         mLaserPaint = new Paint();
         mLaserPaint.setColor(mDefaultLaserColor);
@@ -73,6 +95,19 @@ public class ViewFinderView extends View implements IViewFinder {
         mBorderPaint.setAntiAlias(true);
 
         mBorderLineLength = mDefaultBorderLineLength;
+    }
+
+    private void refreshView() {
+        yPosition += yDelta;
+        if (yPosition > getFramingRect().bottom) {
+            yPosition = getFramingRect().top;
+        }
+        this.invalidate();
+    }
+
+    @Override
+    public void setTablet(boolean isTablet) {
+        this.isTablet = isTablet;
     }
 
     @Override
@@ -154,7 +189,8 @@ public class ViewFinderView extends View implements IViewFinder {
         drawViewFinderBorder(canvas);
 
         if (mIsLaserEnabled) {
-            drawLaser(canvas);
+            drawGradient(canvas);
+            handler.postDelayed(refreshRunnable, 0);
         }
     }
 
@@ -198,20 +234,25 @@ public class ViewFinderView extends View implements IViewFinder {
         canvas.drawPath(path, mBorderPaint);
     }
 
-    public void drawLaser(Canvas canvas) {
+    public void drawGradient(final Canvas canvas) {
         Rect framingRect = getFramingRect();
-        
-        // Draw a red "laser scanner" line through the middle to show decoding is active
-        mLaserPaint.setAlpha(SCANNER_ALPHA[scannerAlpha]);
-        scannerAlpha = (scannerAlpha + 1) % SCANNER_ALPHA.length;
-        int middle = framingRect.height() / 2 + framingRect.top;
-        canvas.drawRect(framingRect.left + 2, middle - 1, framingRect.right - 1, middle + 2, mLaserPaint);
 
-        postInvalidateDelayed(ANIMATION_DELAY,
-                framingRect.left - POINT_SIZE,
-                framingRect.top - POINT_SIZE,
-                framingRect.right + POINT_SIZE,
-                framingRect.bottom + POINT_SIZE);
+        mLaserPaint.setAlpha(scannerAlpha);
+        Rect laserRect = new Rect(framingRect.left, getYPosition(framingRect, -gradientHeight), framingRect.right, getYPosition(framingRect, gradientHeight));
+        Paint paint = new Paint(mLaserPaint);
+        Shader shader = new LinearGradient(laserRect.left, laserRect.top, laserRect.left, laserRect.bottom, Color.TRANSPARENT, getResources().getColor(R.color.viewfinder_laser), Shader.TileMode.CLAMP);
+        paint.setShader(shader);
+        canvas.drawRect(laserRect, paint);
+    }
+
+    private int getYPosition(Rect framingRect, int height) {
+        if (yPosition + height < framingRect.top) {
+            return framingRect.top;
+        } else if (yPosition + height > framingRect.bottom) {
+            return framingRect.bottom;
+        } else {
+            return yPosition += height;
+        }
     }
 
     @Override
@@ -225,8 +266,8 @@ public class ViewFinderView extends View implements IViewFinder {
         int height;
         int orientation = DisplayUtils.getScreenOrientation(getContext());
 
-        if(mSquareViewFinder) {
-            if(orientation != Configuration.ORIENTATION_PORTRAIT) {
+        if (mSquareViewFinder) {
+            if (orientation != Configuration.ORIENTATION_PORTRAIT) {
                 height = (int) (getHeight() * DEFAULT_SQUARE_DIMENSION_RATIO);
                 width = height;
             } else {
@@ -234,26 +275,31 @@ public class ViewFinderView extends View implements IViewFinder {
                 height = width;
             }
         } else {
-            if(orientation != Configuration.ORIENTATION_PORTRAIT) {
+            // Only tablets can be displayed in landscape orientation
+            if (orientation != Configuration.ORIENTATION_PORTRAIT) {
                 height = (int) (getHeight() * LANDSCAPE_HEIGHT_RATIO);
-                width = (int) (LANDSCAPE_WIDTH_HEIGHT_RATIO * height);
+                width = (int) (getWidth() * LANDSCAPE_WIDTH_RATIO);
             } else {
-                width = (int) (getWidth() * PORTRAIT_WIDTH_RATIO);
-                height = (int) (PORTRAIT_WIDTH_HEIGHT_RATIO * width);
+                float heightRatio = isTablet ? TABLET_PORTRAIT_HEIGHT_RATIO : PHONE_PORTRAIT_HEIGHT_RATIO;
+                float widthRatio = isTablet ? TABLET_PORTRAIT_WIDTH_RATIO : PHONE_PORTRAIT_WIDTH_RATIO;
+
+                height = (int) (getHeight() * heightRatio);
+                width = (int) (getWidth() * widthRatio);
             }
         }
 
-        if(width > getWidth()) {
+        if (width > getWidth()) {
             width = getWidth() - MIN_DIMENSION_DIFF;
         }
 
-        if(height > getHeight()) {
+        if (height > getHeight()) {
             height = getHeight() - MIN_DIMENSION_DIFF;
         }
 
         int leftOffset = (viewResolution.x - width) / 2;
         int topOffset = (viewResolution.y - height) / 2;
         mFramingRect = new Rect(leftOffset + mViewFinderOffset, topOffset + mViewFinderOffset, leftOffset + width - mViewFinderOffset, topOffset + height - mViewFinderOffset);
+        yPosition = mFramingRect.top;
     }
 }
 
